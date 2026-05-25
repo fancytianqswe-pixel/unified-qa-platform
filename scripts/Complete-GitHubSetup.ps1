@@ -32,6 +32,8 @@ if ($LASTEXITCODE -ne 0) {
 
 git config user.name "Sunflower"
 git config user.email "765548564@qq.com"
+git config i18n.commitEncoding utf-8
+git config i18n.logOutputEncoding utf-8
 
 Write-Host "`n=== 3/3 推送 main ===" -ForegroundColor Cyan
 $pending = git status --porcelain
