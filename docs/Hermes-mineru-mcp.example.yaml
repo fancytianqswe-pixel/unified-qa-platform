@@ -1,0 +1,28 @@
+# 将下列片段合并到 Hermes 的 ~/.hermes/config.yaml 顶层的 `mcp_servers:` 下
+# 与数据源等一并配置时，可参考同目录 **`Hermes-mcp_servers.builtin-xingyan.example.yaml`**（含 Docker 卷 /opt/xingyan-mcp 说明）。
+# （与现有条目并列，注意 YAML 缩进为 2 空格）。
+#
+# 说明：
+# - `command`/`args` 在「运行 Hermes Gateway 的机器」上执行；若在 Windows 上跑 Gateway，请用本机 node 与 dist 的 Windows 绝对路径。
+# - Gateway 若在 Linux 容器内且无 node，需改用自带 node 的镜像或在宿主机跑 Gateway；详见 Hermes 官方 MCP 文档。
+# - 仅 pipeline 权重：可不设 MINERU_API_DEFAULT_BACKEND（MCP 默认即 pipeline）；显式写 pipeline 亦可。
+# - 已装 VLM、需 hybrid：设置 MINERU_API_DEFAULT_BACKEND=hybrid-auto-engine（或工具参数传 backend）。
+
+xingyan-mineru-api:
+  command: "node"
+  args:
+    # 改为本仓库 mineru-api-mcp/dist/index.js 的绝对路径（正斜杠亦可）
+    - "C:/path/to/cursor/mcp-servers/mineru-api-mcp/dist/index.js"
+  env:
+    MINERU_API_BASE_URL: "http://127.0.0.1:8000"
+    # 可选：未在工具参数里写 backend 时的默认后端
+    MINERU_API_DEFAULT_BACKEND: "pipeline"
+    # 可选：限制 MCP 可读文件目录（Windows 路径前缀）
+    # MINERU_API_ALLOWED_READ_PREFIX: "C:/data/mineru-inbox"
+    # 大文档：优先 mineru_api_parse_and_wait（内建轮询+重试）
+    # MINERU_POLL_INTERVAL_MS: "5000"
+    # MINERU_POLL_MAX_WAIT_MS: "7200000"
+    # MINERU_PARSE_MAX_RETRIES: "3"
+    # MINERU_PARSE_RETRY_DELAY_MS: "5000"
+  # 可选：大 PDF 解析耗时较长时调大（秒）
+  # timeout: 600

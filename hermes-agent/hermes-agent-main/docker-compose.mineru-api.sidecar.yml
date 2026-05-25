@@ -1,0 +1,73 @@
+# =============================================================================
+# MinerU FastAPI 与 Hermes 同 Docker 网络（做法二：Hermes 内 MINERU_API_BASE_URL=http://mineru-api:8000）
+# =============================================================================
+#
+# 镜像：默认用本仓库 docker/mineru-api-runtime/Dockerfile 本地构建为 mineru:latest（轻量，不在构建时下载全量模型）。
+# 若你自行按上游构建了官方 mineru:latest，可改回仅 image: mineru:latest 并删除 build 段。
+# 本文件与 docker-compose.docker-desktop.yml **同一次** docker compose 合并执行，
+# 复用其中已定义的 bridge 网络 hermes-net（勿在本文件再写 networks.hermes-net，否则会与 external/bridge 冲突）。
+#
+# 用法（在 hermes-agent-main 目录下）:
+#   启动（带 profile，避免未构建 mineru:latest 时拉取失败）:
+#        docker compose -f docker-compose.docker-desktop.yml -f docker-compose.mineru-api.sidecar.yml --profile mineru up -d
+#
+# 说明：
+# - 默认不把 8000 映射到宿主机，避免与 WSL 内已占用 8000 的 mineru-api 冲突；Hermes 仅通过服务名访问。
+# - 需要在本机浏览器测 /docs 时，可取消注释 ports 段（例如改为 8001:8000）。
+# - 官方镜像偏 GPU；无 GPU 时见文档「无 NVIDIA」一节。
+#
+# =============================================================================
+
+services:
+  mineru-api:
+    profiles: ["mineru"]
+    build:
+      context: ./docker/mineru-api-runtime
+      dockerfile: Dockerfile
+      args:
+        PIP_INDEX_URL: ${PIP_INDEX_URL:-https://pypi.tuna.tsinghua.edu.cn/simple}
+    image: mineru:latest
+    container_name: mineru-api
+    restart: unless-stopped
+    networks:
+      - hermes-net
+    environment:
+      # 首次无本地缓存可改为 modelscope；有卷持久化后可 local
+      MINERU_MODEL_SOURCE: ${MINERU_MODEL_SOURCE:-local}
+      # 与 mineru-config 卷对齐，避免 compose recreate 后丢失 /root/mineru.json
+      MINERU_TOOLS_CONFIG_JSON: /opt/mineru-config/mineru.json
+      NVIDIA_VISIBLE_DEVICES: ${NVIDIA_VISIBLE_DEVICES:-0}
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    entrypoint: ["mineru-api"]
+    command: ["--host", "0.0.0.0", "--port", "8000"]
+    volumes:
+      # 模型与 ModelScope/HF 缓存持久化；可按需改为宿主机 bind mount
+      - mineru-model-cache:/root/.cache
+      # mineru.json（models-dir 等）；与 MINERU_TOOLS_CONFIG_JSON 一致
+      - mineru-config:/opt/mineru-config
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    ipc: host
+    # 首次拉权重时 /health 可能长时间无响应；timeout/start_period 过小会 unhealthy 且堆积 curl
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS --max-time 90 http://127.0.0.1:8000/health || exit 1"]
+      interval: 60s
+      timeout: 95s
+      retries: 5
+      start_period: 900s
+    # GPU：Docker Desktop 需开启 WSL2 + NVIDIA Container Toolkit；无 GPU 时注释本段与下方 gpus
+    gpus: all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    # ports:
+    #   - "8001:8000"
+
+volumes:
+  mineru-model-cache:
+  mineru-config:

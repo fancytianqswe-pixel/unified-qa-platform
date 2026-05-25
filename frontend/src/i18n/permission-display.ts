@@ -1,0 +1,51 @@
+/** 权限矩阵里落库仍为中文 canonical；界面用文案键翻译展示 */
+
+export const PERM_BUTTON_I18N_KEY: Record<string, string> = {
+  发送: "admin.permBtn.send",
+  上传附件: "admin.permBtn.uploadAttachment",
+  技能: "admin.permBtn.skill",
+  模型选择: "admin.permBtn.modelSelect",
+  语音输入: "admin.permBtn.voice",
+  一键试用: "admin.permBtn.try",
+  订阅: "admin.permBtn.subscribe",
+  克隆: "admin.permBtn.clone",
+  上传技能包: "admin.permBtn.skillsUploadJson",
+  新建技能: "admin.permBtn.skillsNewWorkspace",
+  市场与我的: "admin.permBtn.skillsTabScope",
+  搜索与筛选: "admin.permBtn.skillsSearchFilter",
+  订阅管理: "admin.permBtn.skillsSubscription",
+  克隆与定制: "admin.permBtn.skillsCloneCustomize",
+  下载文档: "admin.permBtn.skillsDownloadDoc",
+  文档预览: "admin.permBtn.skillsDocPreview",
+  文档源码: "admin.permBtn.skillsDocSource",
+  查看详情: "admin.permBtn.viewDetail",
+  重跑: "admin.permBtn.rerun",
+  停止: "admin.permBtn.stop",
+  查看结果查询明细: "admin.permBtn.viewResultDetail",
+  查看报告中心: "admin.permBtn.viewReport",
+  新增数据源: "admin.permBtn.addDatasource",
+  更新字段: "admin.permBtn.updateFields",
+  获取数据: "admin.permBtn.fetchData",
+  保存字段: "admin.permBtn.saveFields",
+  编辑: "admin.permBtn.edit",
+  删除: "admin.permBtn.delete",
+  新增组织: "admin.permBtn.addOrg",
+  删除组织: "admin.permBtn.delOrg",
+  新增用户: "admin.permBtn.addUser",
+  删除用户: "admin.permBtn.delUser",
+  新增角色: "admin.permBtn.addRole",
+  保存: "admin.permBtn.save",
+  配置按钮: "admin.permBtn.configButtons",
+  添加: "admin.permBtn.add",
+  启用停用: "admin.permBtn.toggleEnable",
+  导出JSON: "admin.permBtn.exportJson",
+  测试连接: "admin.permBtn.testConnection",
+  内置开关: "admin.permBtn.builtinToggle",
+  新增模型: "admin.permBtn.addModel",
+  保存配置: "admin.permBtn.saveConfig",
+};
+
+export function permButtonLabel(canonical: string, t: (key: string) => string): string {
+  const k = PERM_BUTTON_I18N_KEY[canonical];
+  return k ? t(k) : canonical;
+}

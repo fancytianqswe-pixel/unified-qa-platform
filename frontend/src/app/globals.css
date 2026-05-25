@@ -1,0 +1,340 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+.dark {
+  --background: #0f172a;
+  --foreground: #e2e8f0;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  /** 不依赖 `next/font/google`（无外网或 Google Fonts 不可达时构建/首包会失败），与 `globals.css` body 字体栈一致 */
+  --font-sans: ui-sans-serif, system-ui, "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", "Cascadia Mono", Consolas, monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-100;
+    font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+  }
+
+  table {
+    @apply w-full border-collapse text-xs;
+  }
+
+  th,
+  td {
+    @apply border-b border-slate-200 px-2 py-1.5 text-left dark:border-slate-700 dark:text-slate-200;
+  }
+}
+
+@layer components {
+  /**
+   * 对话区 / 侧栏「历史任务」等仍使用 `.chat-scroll-area` 类名（语义与覆写锚点）；
+   * 滚动条样式见 **`src/app/scrollbar-overrides.css`**（在 `layout.tsx` 中于 `globals.css` 之后单独引入）。
+   */
+  .shadow-soft {
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+  }
+  .jump-page {
+    @apply min-h-screen flex flex-col items-center justify-center gap-4;
+  }
+  .jump-page a {
+    @apply rounded-full bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 transition;
+  }
+  .jump-links {
+    @apply flex flex-wrap gap-2;
+  }
+  .new-task-page,
+  .skill-shell {
+    @apply mx-auto max-w-6xl px-4 pb-8 pt-6;
+  }
+  .hero-panel,
+  .skill-header,
+  .skill-panel,
+  .task-card,
+  .skill-detail-card,
+  .chat-input-wrap,
+  .message {
+    @apply rounded-3xl bg-white p-5 text-slate-800 shadow-sm ring-1 ring-slate-900/[0.04] dark:bg-slate-900 dark:text-slate-100 dark:shadow-none dark:ring-slate-700/80;
+  }
+  .skill-header input,
+  .editor-grid input,
+  .editor-grid textarea,
+  .review-form input,
+  .review-form textarea,
+  .filter-row input,
+  .filter-row select,
+  textarea,
+  select,
+  input {
+    @apply mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-900/50;
+  }
+  /* ChatInput 技能面板内联搜索：不参与全局 input 的蓝边 focus 样式 */
+  input.skill-picker-search {
+    @apply mt-0 w-full rounded-none border-0 bg-transparent px-0 py-0.5 shadow-none ring-0 outline-none;
+    @apply focus:border-transparent focus:shadow-none focus:outline-none focus:ring-0 focus:ring-offset-0;
+    @apply focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0;
+  }
+  input[type="checkbox"],
+  input[type="radio"] {
+    @apply mt-0 h-4 w-4 shrink-0 rounded border-slate-300 p-0 align-middle dark:border-slate-600 dark:bg-slate-900;
+  }
+  button {
+    @apply rounded-full bg-blue-600 px-3 py-2 text-white hover:bg-blue-700 transition disabled:cursor-not-allowed disabled:opacity-60;
+    @apply dark:bg-blue-500 dark:hover:bg-blue-400;
+  }
+  /** 显式加在次要按钮上，避免依赖文件末尾兜底选择器 */
+  .btn-outline {
+    @apply rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-800 shadow-sm;
+    @apply hover:bg-slate-50;
+    @apply dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:shadow-none dark:hover:bg-slate-700;
+  }
+  .btn-secondary {
+    @apply bg-indigo-50 text-indigo-900 hover:bg-indigo-100 dark:bg-slate-800 dark:text-indigo-100 dark:hover:bg-slate-700;
+  }
+  .chips,
+  .inline-actions,
+  .actions,
+  .detail-actions,
+  .input-actions,
+  .filter-row {
+    @apply flex flex-wrap items-center gap-2;
+  }
+  .chip {
+    @apply rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-xs text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200;
+  }
+  .message-wrap,
+  .editor-wrap,
+  .timeline,
+  .report-list {
+    @apply mt-3 flex flex-col gap-3;
+  }
+  .context-bar,
+  .readonly-box,
+  .report-item,
+  .h5-preview,
+  .diff-line {
+    @apply rounded-xl bg-slate-50 p-3 dark:bg-slate-800/80 dark:text-slate-200;
+  }
+  .diff-line.changed {
+    @apply border border-amber-300 bg-amber-50;
+  }
+  .error-card {
+    @apply border border-red-300 bg-rose-50 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-100;
+  }
+  .danger {
+    @apply mt-2 text-sm text-red-700 dark:text-red-300;
+  }
+  .ok-tip {
+    @apply text-sm text-emerald-700;
+  }
+  .skill-grid {
+    @apply mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3;
+  }
+  .skill-card {
+    @apply block rounded-3xl bg-white p-4 text-slate-800 shadow-sm transition hover:shadow dark:bg-slate-900 dark:text-slate-100 dark:shadow-none dark:ring-1 dark:ring-slate-700/80 dark:hover:shadow-none;
+  }
+  .skill-top {
+    @apply flex items-center gap-2;
+  }
+  .skill-meta {
+    @apply flex flex-col gap-1 text-xs text-slate-500 dark:text-slate-400;
+  }
+  .editor-grid,
+  .diff-grid {
+    @apply grid grid-cols-1 gap-3 md:grid-cols-2;
+  }
+  .panel-title-row,
+  .message header {
+    @apply flex items-center justify-between gap-2;
+  }
+  .tabs {
+    @apply flex flex-wrap gap-2;
+  }
+  .tab {
+    @apply rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700;
+  }
+  .tab.active {
+    @apply border-blue-600 bg-blue-600 text-white hover:bg-blue-700;
+  }
+  .mapping-list {
+    @apply mt-2 grid gap-2;
+  }
+  .mapping-item {
+    @apply flex cursor-grab items-center justify-between gap-2 rounded-xl bg-white p-2 dark:bg-slate-800 dark:ring-1 dark:ring-slate-700/60;
+  }
+  .thumbs {
+    @apply mt-2 flex gap-2;
+  }
+  .plan-list {
+    @apply ml-5 list-decimal;
+  }
+  .table-wrap {
+    @apply overflow-x-auto;
+  }
+  /** 隐藏滚动条但保留滚动能力（弹窗遮罩等） */
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /**
+   * 工具过程胶囊「进行中」：整颗胶囊上的一层渐变遮罩横向扫过（与 artifacts 工具栏方案2一致）。
+   * 浅色：暖灰 / stone 系亮带；深色：弱白亮带。无蓝、无逐字 color 波浪。子内容需叠在遮罩之上。
+   */
+  .tool-pill--running {
+    isolation: isolate;
+  }
+  .tool-pill--running > * {
+    position: relative;
+    z-index: 1;
+  }
+  .tool-pill--running::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -100%;
+    width: 100%;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(68, 64, 60, 0) 18%,
+      rgba(68, 64, 60, 0.07) 42%,
+      rgba(41, 37, 36, 0.11) 50%,
+      rgba(68, 64, 60, 0.07) 58%,
+      rgba(68, 64, 60, 0) 82%,
+      transparent 100%
+    );
+    animation: tool-pill-gradient-wave 2.4s ease-in-out infinite;
+  }
+  html.dark .tool-pill--running::before {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(244, 244, 245, 0) 18%,
+      rgba(244, 244, 245, 0.06) 42%,
+      rgba(250, 250, 250, 0.12) 50%,
+      rgba(244, 244, 245, 0.06) 58%,
+      rgba(244, 244, 245, 0) 82%,
+      transparent 100%
+    );
+  }
+  @keyframes tool-pill-gradient-wave {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(200%);
+    }
+  }
+  .timeline-item {
+    @apply flex items-start gap-2;
+  }
+  .dot {
+    @apply mt-1.5 size-2.5 rounded-full bg-blue-600;
+  }
+  .version-item {
+    @apply grid grid-cols-1 gap-2 border-b border-slate-100 py-2 md:grid-cols-[120px_1fr_100px];
+  }
+  .switch-row {
+    @apply flex items-center gap-2;
+  }
+  .log-box {
+    @apply mt-2 min-h-24 rounded-xl bg-slate-900 p-3 font-mono text-xs text-slate-100;
+  }
+
+  /** 系统管理「添加 MCP 服务」弹窗：覆盖全局 button 蓝底与 input 蓝 focus */
+  .mcp-service-modal input:not([type="checkbox"]):not([type="radio"]),
+  .mcp-service-modal select,
+  .mcp-service-modal textarea {
+    @apply mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-none outline-none dark:border-slate-600 dark:bg-slate-950 dark:text-slate-100;
+    @apply focus:border-slate-400 focus:ring-0 focus:ring-offset-0 focus-visible:outline-none dark:focus:border-slate-500;
+  }
+  .mcp-service-modal .mcp-modal-type-select {
+    @apply mt-0 min-h-[42px] min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-none outline-none dark:border-slate-600 dark:bg-slate-950 dark:text-slate-100;
+    @apply focus:border-slate-400 focus:ring-0 focus:ring-offset-0 dark:focus:border-slate-500;
+  }
+  .mcp-service-modal .mcp-modal-input-row {
+    @apply mt-0 min-w-0 flex-1;
+  }
+  .mcp-service-modal button {
+    @apply rounded-lg border-0 bg-transparent px-2 py-2 text-sm font-medium text-slate-700 shadow-none ring-0 outline-none transition dark:text-slate-200;
+    @apply hover:bg-slate-100 dark:hover:bg-slate-800;
+  }
+  .mcp-service-modal button.mcp-modal-primary {
+    @apply rounded-xl bg-slate-900 px-4 py-2 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white;
+  }
+  .mcp-service-modal button.mcp-modal-outline {
+    @apply rounded-xl border border-slate-300 bg-white px-4 py-2 text-slate-800 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700;
+  }
+  .mcp-service-modal button.mcp-modal-icon {
+    @apply inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white p-2 text-slate-500 hover:bg-slate-50 hover:text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-slate-100;
+  }
+  .mcp-service-modal button.mcp-modal-icon-danger {
+    @apply inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white p-2 text-slate-500 hover:bg-red-50 hover:text-red-600 dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-red-950/40 dark:hover:text-red-300;
+  }
+  .mcp-service-modal button.mcp-modal-add-row {
+    @apply rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700;
+  }
+}
+
+/**
+ * 深色模式按钮兜底：未写 dark: 的「白底 / 浅 rose / 浅 slate」按钮统一到 slate 系，
+ * 排除已在 class 中带 `dark:!bg` / `dark:bg` 的按钮（避免覆盖组件内显式深色）。
+ * 置于 @layer 外、文件靠后，配合 !important 压过单层 utility。
+ */
+html.dark button[class*="bg-white"]:not([class*="dark:!bg"]):not([class*="dark:bg-slate"]):not([class*="dark:bg-blue"]):not(
+    [class*="dark:bg-indigo"]
+  ):not([class*="dark:bg-red"]):not([class*="dark:bg-rose"]):not([class*="dark:bg-emerald"]) {
+  background-color: rgb(30 41 59) !important;
+  color: rgb(241 245 249) !important;
+  border-color: rgb(71 85 105) !important;
+  box-shadow: none !important;
+}
+html.dark button[class*="bg-white"]:not([class*="dark:!bg"]):not([class*="dark:bg-slate"]):hover {
+  background-color: rgb(51 65 85) !important;
+}
+html.dark button[class*="bg-rose-50"]:not([class*="dark:!bg-rose"]):not([class*="dark:bg-rose-9"]) {
+  background-color: rgba(136, 19, 55, 0.45) !important;
+  color: rgb(254 205 211) !important;
+  border-color: rgba(190, 18, 60, 0.5) !important;
+}
+html.dark button[class*="bg-rose-50"]:not([class*="dark:!bg-rose"]):hover,
+html.dark button[class*="hover:!bg-rose-100"]:hover,
+html.dark button[class*="hover:bg-rose-100"]:hover {
+  background-color: rgba(190, 18, 60, 0.55) !important;
+}
+html.dark button[class*="!bg-slate-100"]:not([class*="dark:!bg-slate"]) {
+  background-color: rgb(30 41 59) !important;
+  color: rgb(226 232 240) !important;
+}
+html.dark button[class*="!bg-slate-100"]:not([class*="dark:!bg-slate"]):hover,
+html.dark button[class*="hover:!bg-slate-200"]:hover,
+html.dark button[class*="hover:bg-slate-200"]:hover {
+  background-color: rgb(51 65 85) !important;
+}
+html.dark button[class*="border-red-200"][class*="bg-white"] {
+  background-color: rgba(127, 29, 29, 0.35) !important;
+  color: rgb(254 202 202) !important;
+  border-color: rgba(185, 28, 28, 0.55) !important;
+}
+html.dark button[class*="border-red-200"][class*="bg-white"]:hover,
+html.dark button[class*="hover:bg-red-50"]:hover {
+  background-color: rgba(153, 27, 27, 0.45) !important;
+}
+

@@ -1,0 +1,66 @@
+#
+# Docker Desktop（Windows / macOS）专用：不使用 host 网络，避免本机浏览器无法访问 127.0.0.1:9119。
+# 与根目录 docker-compose.yml 内容等价，仅改为桥接网络 + 端口映射 + Dashboard 绑定 0.0.0.0。
+#
+# 启动（仅此文件即可，勿与默认 compose 叠加，否则会与 network_mode: host 冲突）：
+#   docker compose -f docker-compose.docker-desktop.yml up -d
+# 重建：
+#   docker compose -f docker-compose.docker-desktop.yml up -d --build
+#
+# Windows 上 HERMES_UID/GID 可省略或设为 10000；数据目录仍为 ~/.hermes。
+# Dashboard 在非 127.0.0.1 上监听时，上游 CLI 要求同时传入 --insecure（见 hermes_cli/web_server.py），
+# 否则进程会直接退出，宿主机仍表现为连接被拒绝。仅限本机开发；勿在公网无防护暴露 9119。
+#
+# Gateway 状态：Dashboard 通过 GATEWAY_HEALTH_URL 访问 /health（见 gateway/platforms/api_server.py），
+# 必须启用 API Server 并监听 0.0.0.0，否则跨容器探测失败、界面显示 GATEWAY STOPPED。
+# 绑定非 localhost 时上游要求设置 API_SERVER_KEY（可用环境变量覆盖下方默认值）。
+#
+
+services:
+  gateway:
+    build: .
+    image: hermes-agent
+    container_name: hermes
+    restart: unless-stopped
+    networks:
+      - hermes-net
+    ports:
+      - "8642:8642"
+    volumes:
+      - ~/.hermes:/opt/data
+      # 宿主目录 → 容器 /opt/platform-skills。默认相对本 compose 文件所在目录的 ../../platform-skills（即仓库根）。
+      # 若界面技能数未增加，在**本文件同目录**创建 .env 设置绝对路径，例如：
+      #   PLATFORM_SKILLS_BIND=C:/Users/you/cursor/platform-skills
+      - ${PLATFORM_SKILLS_BIND:-../../platform-skills}:/opt/platform-skills:ro
+    environment:
+      - HERMES_UID=${HERMES_UID:-10000}
+      - HERMES_GID=${HERMES_GID:-10000}
+      - API_SERVER_ENABLED=true
+      - API_SERVER_HOST=0.0.0.0
+      - API_SERVER_PORT=8642
+      - API_SERVER_KEY=${API_SERVER_KEY:-hermes-local-docker-desktop-dev}
+    command: ["gateway", "run"]
+
+  dashboard:
+    image: hermes-agent
+    container_name: hermes-dashboard
+    restart: unless-stopped
+    networks:
+      - hermes-net
+    ports:
+      - "9119:9119"
+    depends_on:
+      - gateway
+    volumes:
+      - ~/.hermes:/opt/data
+      # 与 gateway 一致：Dashboard 的 /api/skills 在容器内扫盘，需能访问 external_dirs 指向的路径
+      - ${PLATFORM_SKILLS_BIND:-../../platform-skills}:/opt/platform-skills:ro
+    environment:
+      - HERMES_UID=${HERMES_UID:-10000}
+      - HERMES_GID=${HERMES_GID:-10000}
+      - GATEWAY_HEALTH_URL=http://gateway:8642
+    command: ["dashboard", "--host", "0.0.0.0", "--insecure", "--no-open"]
+
+networks:
+  hermes-net:
+    driver: bridge

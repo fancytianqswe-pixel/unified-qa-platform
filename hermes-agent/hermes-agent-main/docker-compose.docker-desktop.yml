@@ -1,0 +1,79 @@
+#
+# Docker Desktop閿涘湹indows / macOS閿涘绗撻悽顭掔窗娑撳秳濞囬悽?host 缂冩垹绮堕敍宀勪缉閸忓秵婀伴張鐑樼セ鐟欏牆娅掗弮鐘崇《鐠佸潡妫?127.0.0.1:9119閵?
+# 娑撳孩鐗撮惄顔肩秿 docker-compose.yml 閸愬懎顔愮粵澶夌幆閿涘奔绮庨弨閫涜礋濡椼儲甯寸純鎴犵捕 + 缁旑垰褰涢弰鐘茬殸 + Dashboard 缂佹垵鐣?0.0.0.0閵?
+#
+# 閸氼垰濮╅敍鍫滅矌濮濄倖鏋冩禒璺哄祮閸欘垽绱濋崟澶哥瑢姒涙顓?compose 閸欑姴濮為敍灞芥儊閸掓瑤绱版稉?network_mode: host 閸愯尙鐛婇敍澶涚窗
+#   docker compose -f docker-compose.docker-desktop.yml up -d
+# 闁插秴缂撻敍?
+#   docker compose -f docker-compose.docker-desktop.yml up -d --build
+#
+# Windows 娑?HERMES_UID/GID 閸欘垳娓烽悾銉﹀灗鐠佸彞璐?10000閿涙稒鏆熼幑顔炬窗瑜版洑绮涙稉?~/.hermes閵?
+# Dashboard 閸︺劑娼?127.0.0.1 娑撳﹦娲冮崥顒佹閿涘奔绗傚〒?CLI 鐟曚焦鐪伴崥灞炬娴肩姴鍙?--insecure閿涘牐顫?hermes_cli/web_server.py閿涘绱?
+# 閸氾箑鍨潻娑氣柤娴兼氨娲块幒銉┾偓鈧崙鐚寸礉鐎瑰じ瀵岄張杞扮矝鐞涖劎骞囨稉楦跨箾閹恒儴顫﹂幏鎺旂卜閵嗗倷绮庨梽鎰拱閺堝搫绱戦崣鎴幢閸曞灝婀崗顒傜秹閺冪娀妲婚幎銈嗘瘹闂?9119閵?
+#
+# Gateway 閻樿埖鈧緤绱癉ashboard 闁俺绻?GATEWAY_HEALTH_URL 鐠佸潡妫?/health閿涘牐顫?gateway/platforms/api_server.py閿涘绱?
+# 韫囧懘銆忛崥顖滄暏 API Server 楠炲墎娲冮崥?0.0.0.0閿涘苯鎯侀崚娆掓硶鐎圭懓娅掗幒銏＄ゴ婢惰精瑙﹂妴浣烘櫕闂堛垺妯夌粈?GATEWAY STOPPED閵?
+# 缂佹垵鐣鹃棃?localhost 閺冩湹绗傚〒姝岊洣濮瑰倽顔曠純?API_SERVER_KEY閿涘牆褰查悽銊у箚婢у啫褰夐柌蹇氼洬閻╂牔绗呴弬褰掔帛鐠併倕鈧》绱氶妴?
+#
+
+services:
+  gateway:
+    build: .
+    image: hermes-agent
+    container_name: hermes
+    restart: unless-stopped
+    networks:
+      - hermes-net
+    ports:
+      - "8642:8642"
+    volumes:
+      # 含 chat-uploads：Next 默认写入 ~/.hermes/chat-uploads，网关在容器内读 /opt/data/chat-uploads
+      - ~/.hermes:/opt/data
+      # 鐎瑰じ瀵岄惄顔肩秿 閳?鐎圭懓娅?/opt/platform-skills閵嗗倿绮拋銈囨祲鐎佃婀?compose 閺傚洣娆㈤幍鈧崷銊ф窗瑜版洜娈?../../platform-skills閿涘牆宓嗘禒鎾崇氨閺嶇櫢绱氶妴?
+      # 閼汇儳鏅棃銏″Η閼宠姤鏆熼張顏勵杻閸旂媴绱濋崷?*閺堫剚鏋冩禒璺烘倱閻╊喖缍?*閸掓稑缂?.env 鐠佸墽鐤嗙紒婵嗩嚠鐠侯垰绶為敍灞肩伐婵″偊绱?
+      #   PLATFORM_SKILLS_BIND=C:/Users/you/cursor/platform-skills
+      - ${PLATFORM_SKILLS_BIND:-../../platform-skills}:/opt/platform-skills:ro
+      # 统一质检平台内置 stdio MCP（datasource / mineru-*）供 ~/.hermes/config.yaml 中 /opt/xingyan-mcp/... 引用
+      - ${XINGYAN_MCP_SERVERS_BIND:-../../mcp-servers}:/opt/xingyan-mcp:ro
+    environment:
+      - HERMES_UID=${HERMES_UID:-10000}
+      - HERMES_GID=${HERMES_GID:-10000}
+      - API_SERVER_ENABLED=true
+      - API_SERVER_HOST=0.0.0.0
+      - API_SERVER_PORT=8642
+      - API_SERVER_KEY=${API_SERVER_KEY:-hermes-local-docker-desktop-dev}
+      # 统一质检平台 Next 在宿主机、Gateway 在容器：内置 datasource 工具 HTTP 调 Next /api/datasource/*
+      - DATASOURCE_MCP_BASE_URL=${DATASOURCE_MCP_BASE_URL:-http://host.docker.internal:3000}
+      # API Server 对话：优先 MCP（MinerU/datasource），再 skill_view；设为 0/false/off 关闭
+      - HERMES_XINGYAN_PREFER_MCP_TOOLS=${HERMES_XINGYAN_PREFER_MCP_TOOLS:-1}
+      # 长对话 SSE：更频繁 keepalive，降低代理/中间层 15min 级 idle 断连（terminated）
+      - HERMES_SSE_KEEPALIVE_SECONDS=${HERMES_SSE_KEEPALIVE_SECONDS:-15}
+      - HERMES_RUN_SSE_POLL_SECONDS=${HERMES_RUN_SSE_POLL_SECONDS:-60}
+    command: ["gateway", "run"]
+
+  dashboard:
+    image: hermes-agent
+    container_name: hermes-dashboard
+    restart: unless-stopped
+    networks:
+      - hermes-net
+    ports:
+      - "9119:9119"
+    depends_on:
+      - gateway
+    volumes:
+      - ~/.hermes:/opt/data
+      # 娑?gateway 娑撯偓閼疯揪绱癉ashboard 閻?/api/skills 閸︺劌顔愰崳銊ュ敶閹殿偆娲忛敍宀勬付閼冲€燁問闂?external_dirs 閹稿洤鎮滈惃鍕熅瀵?
+      - ${PLATFORM_SKILLS_BIND:-../../platform-skills}:/opt/platform-skills:ro
+    environment:
+      - HERMES_UID=${HERMES_UID:-10000}
+      - HERMES_GID=${HERMES_GID:-10000}
+      - GATEWAY_HEALTH_URL=http://gateway:8642
+      - HERMES_GATEWAY_URL=http://gateway:8642
+    command: ["dashboard", "--host", "0.0.0.0", "--insecure", "--no-open"]
+
+networks:
+  hermes-net:
+    driver: bridge
+
+

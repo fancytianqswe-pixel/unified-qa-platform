@@ -1,0 +1,21 @@
+-- 平台库：系统管理「MCP 服务」自定义服务器配置表
+-- 在 PLATFORM_MYSQL_DATABASE（默认 platform）中执行；若库不存在请先 CREATE DATABASE。
+
+SET NAMES utf8mb4;
+
+CREATE TABLE IF NOT EXISTS platform_mcp_services (
+  id CHAR(36) NOT NULL PRIMARY KEY,
+  name VARCHAR(128) NOT NULL,
+  transport VARCHAR(32) NOT NULL COMMENT 'stdio | sse | streamable_http | json',
+  definition_json JSON NOT NULL,
+  enabled TINYINT(1) NOT NULL DEFAULT 1,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  UNIQUE KEY uq_platform_mcp_name (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS platform_mcp_builtin_prefs (
+  builtin_key VARCHAR(64) NOT NULL PRIMARY KEY,
+  enabled TINYINT(1) NOT NULL DEFAULT 0,
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

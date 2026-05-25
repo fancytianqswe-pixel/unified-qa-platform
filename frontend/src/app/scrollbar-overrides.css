@@ -1,0 +1,82 @@
+/**
+ * 滚动条覆盖层：单独文件、在 layout 中于 globals.css 之后 import，
+ * 避免 Tailwind/PostCSS 把 globals 末尾「未分层」规则排到生成样式之后而失效。
+ * 侧栏历史、对话主列等使用 .chat-scroll-area；Firefox 用 thin + color；WebKit 用 4px + !important。
+ */
+:root {
+  --app-scrollbar-size: 4px;
+}
+
+/* Firefox：不继承，对根与常见滚动容器显式声明 */
+html,
+body,
+.chat-scroll-area,
+.overflow-auto,
+.overflow-y-auto,
+.overflow-x-auto {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(15, 23, 42, 0.14) transparent;
+}
+
+html.dark,
+html.dark body,
+html.dark .chat-scroll-area,
+html.dark .overflow-auto,
+html.dark .overflow-y-auto,
+html.dark .overflow-x-auto {
+  scrollbar-color: rgba(248, 250, 252, 0.14) transparent;
+}
+
+/* WebKit：通配 + 业务类双写，尽量压过后序工具类 */
+*::-webkit-scrollbar {
+  width: var(--app-scrollbar-size) !important;
+  height: var(--app-scrollbar-size) !important;
+}
+*::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(15, 23, 42, 0.16) !important;
+  border-radius: 999px !important;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(15, 23, 42, 0.24) !important;
+}
+*::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+html.dark *::-webkit-scrollbar-thumb {
+  background-color: rgba(248, 250, 252, 0.14) !important;
+}
+html.dark *::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(248, 250, 252, 0.22) !important;
+}
+
+.chat-scroll-area::-webkit-scrollbar {
+  width: var(--app-scrollbar-size) !important;
+  height: var(--app-scrollbar-size) !important;
+}
+.chat-scroll-area::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+.chat-scroll-area::-webkit-scrollbar-thumb {
+  background-color: rgba(15, 23, 42, 0.16) !important;
+  border-radius: 999px !important;
+}
+.chat-scroll-area::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(15, 23, 42, 0.24) !important;
+}
+.chat-scroll-area::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+html.dark .chat-scroll-area::-webkit-scrollbar-thumb {
+  background-color: rgba(248, 250, 252, 0.14) !important;
+}
+html.dark .chat-scroll-area::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(248, 250, 252, 0.22) !important;
+}

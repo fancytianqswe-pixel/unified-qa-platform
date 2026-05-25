@@ -1,0 +1,63 @@
+# =============================================================================
+# 统一质检平台「内置 MCP」与 Hermes `mcp_servers` 对照说明（示例片段）
+# =============================================================================
+#
+# 【系统能力】
+#   不属于 mcp_servers。由 Hermes 网关 API Server 工具集注册（如内置 datasource_*），
+#   随网关启动与工具集配置生效；管理页「内置MCP」总开关为产品侧展示/导出逻辑。
+#
+# 【以下三项为 stdio MCP】需合并到 Hermes 实际使用的配置文件（常见为 ~/.hermes/config.yaml
+#   顶层 `mcp_servers:`），并保证 `command`/`args`/`cwd` 在「运行 Gateway 的环境」内有效。
+#
+# Docker Desktop 部署本仓库 compose 时，已增加卷：
+#   ../../mcp-servers → 容器内 /opt/xingyan-mcp （环境变量 XINGYAN_MCP_SERVERS_BIND 可覆盖宿主路径）
+# 故容器内路径可写为 /opt/xingyan-mcp/.../dist/index.js 。
+#
+# 若 Gateway 在 Windows 宿主机直接跑（非容器），请把 args/cwd 改为本机绝对路径，例如：
+#   - "C:/Users/你/Desktop/.../cursor/mcp-servers/mineru-api-mcp/dist/index.js"
+#
+# 构建 dist（在仓库根执行）：
+#   cd mcp-servers/datasource-mcp && npm install && npm run build
+#   cd mcp-servers/mineru-local-mcp && npm install && npm run build
+#   cd mcp-servers/mineru-api-mcp && npm install && npm run build
+#
+# -----------------------------------------------------------------------------
+
+mcp_servers:
+  # 与数据中心同源：HTTP 调 Next /api/datasource/*
+  xingyan-datasource:
+    command: "node"
+    args:
+      - "/opt/xingyan-mcp/datasource-mcp/dist/index.js"
+    cwd: "/opt/xingyan-mcp/datasource-mcp"
+    env:
+      # Gateway 在 Docker、Next 在宿主机：
+      DATASOURCE_MCP_BASE_URL: "http://host.docker.internal:3000"
+      # 若 Gateway 与 Next 同机（network_mode: host 等）可改为: "http://127.0.0.1:3000"
+
+  # 本机 mineru CLI；容器内无 CLI 时请 enabled: false 或整段删除
+  xingyan-mineru-local:
+    enabled: false
+    command: "node"
+    args:
+      - "/opt/xingyan-mcp/mineru-local-mcp/dist/index.js"
+    cwd: "/opt/xingyan-mcp/mineru-local-mcp"
+    env:
+      MINERU_EXECUTABLE: "mineru"
+      MINERU_CLI_TIMEOUT_MS: "600000"
+
+  # 已启动的 mineru-api（FastAPI）；WSL/远程时请改为可达地址
+  xingyan-mineru-api:
+    command: "node"
+    args:
+      - "/opt/xingyan-mcp/mineru-api-mcp/dist/index.js"
+    cwd: "/opt/xingyan-mcp/mineru-api-mcp"
+    env:
+      MINERU_API_BASE_URL: "http://mineru-api:8000"
+      MINERU_POLL_INTERVAL_MS: "5000"
+      MINERU_POLL_MAX_WAIT_MS: "7200000"
+      MINERU_PARSE_MAX_RETRIES: "3"
+      MINERU_PARSE_RETRY_DELAY_MS: "5000"
+      # 不设则 mineru-api-mcp 默认 pipeline；仅 hybrid/VLM 环境再取消注释并改为 hybrid-auto-engine 等
+      # MINERU_API_DEFAULT_BACKEND: "pipeline"
+      # MINERU_API_ALLOWED_READ_PREFIX: "/opt/data/chat-uploads"

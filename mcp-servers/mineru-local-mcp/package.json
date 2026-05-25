@@ -1,0 +1,26 @@
+{
+  "name": "@xingyan/mineru-local-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "stdio MCP: spawn MinerU CLI (mineru -p -o …) for local PDF/Office parsing",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "xingyan-mineru-local-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.0",
+    "typescript": "^5.7.0"
+  }
+}
