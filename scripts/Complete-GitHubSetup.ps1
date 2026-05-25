@@ -1,6 +1,10 @@
 # 在 Cursor 集成终端（非 Agent 后台）中运行，保持窗口不关闭直到完成。
 # 用法：.\scripts\Complete-GitHubSetup.ps1
 
+chcp 65001 | Out-Null
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 Set-Location $Root
